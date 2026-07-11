@@ -5,6 +5,7 @@ import time
 import requests
 
 from morning_earnings import create_message
+from earnings_preview import create_preview_message
 
 TELEGRAM_MAX_LENGTH = 4096
 
@@ -94,6 +95,18 @@ def send_telegram(message: str) -> list:
 
 
 if __name__ == "__main__":
-    message = create_message()
-    result = send_telegram(message)
+    morning_message = create_message()
+
+    preview_message = create_preview_message()
+
+    if preview_message and preview_message != "No important NASDAQ earnings tomorrow.":
+        final_message = (
+            morning_message
+            + "\n\n----------------\n\n"
+            + preview_message
+        )
+    else:
+        final_message = morning_message
+
+    result = send_telegram(final_message)
     print(result)
