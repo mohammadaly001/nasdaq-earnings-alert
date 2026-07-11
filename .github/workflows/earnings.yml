@@ -2,7 +2,9 @@ name: Nasdaq Earnings Alert
 
 on:
   schedule:
-    - cron: "0 12 * * 1-5"
+    # 02:30 UTC = 07:00 Asia/Kabul (UTC+4:30, no daylight saving in Afghanistan).
+    # Runs Mon-Fri UTC, which aligns with US trading days.
+    - cron: "30 2 * * 1-5"
   workflow_dispatch: {}
 
 permissions:
@@ -30,16 +32,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Earnings Calendar
+      - name: Run morning alert
         env:
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          python earnings_calendar.py
-          python earnings_bot.py
+        run: python send_morning_alert.py
 
       - name: Commit updated state
+        if: success()
         run: |
           git config user.name "earnings-bot"
           git config user.email "actions@users.noreply.github.com"
